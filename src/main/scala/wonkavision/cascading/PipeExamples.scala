@@ -1,4 +1,4 @@
-package chheng.cascading
+package org.wonkavision.cascading
 
 import cascading.tuple.Fields
 import cascading.scheme.{TextLine, TextDelimited}
@@ -8,14 +8,6 @@ import cascading.flow.{Flow, FlowConnector}
 import cascading.pipe.Each
 import cascading.operation.Identity
 
-/**
- * 
- * User: @tommychheng
- * Date: Sep 13, 2010
- * Time: 9:36:10 PM
- *
- *
- */
 
 object PipeExamples{
   def main(args: Array[String]) {
