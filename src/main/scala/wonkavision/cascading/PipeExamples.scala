@@ -37,7 +37,7 @@ object PipeExamples{
     val flow = flowConnector.connect( sourceTap, sinkTap, pipe )
 
     // optionally print out the parsedLogFlow to a DOT file for import into a graphics package
-    flow.writeDOT( "pipeExamples.dot" )
+    //flow.writeDOT( "pipeExamples.dot" )
 
     flow.complete()
   }
