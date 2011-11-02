@@ -3,6 +3,7 @@ package org.wonkavision.cascading
 import org.scalatest.Spec
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.ShouldMatchers
+import scala.io.Source
 
 class PipeExamplesSpec extends Spec with BeforeAndAfter with ShouldMatchers {
 
@@ -15,7 +16,7 @@ class PipeExamplesSpec extends Spec with BeforeAndAfter with ShouldMatchers {
 
     PipeExamples.main(Array(input1, input2, output))
 
-    result = scala.io.Source.fromFile(output + "/out.txt").getLines.toList
+    result = Source.fromFile(output).getLines.toList
   }
 
   describe("Processing simple input streams") {
