@@ -11,11 +11,11 @@ class PipeExamplesSpec extends Spec with BeforeAndAfter with ShouldMatchers {
   before {
     val input1 = "src/test/resources/input/pipe_examples_file1.txt"
     val input2 = "src/test/resources/input/pipe_examples_file2.txt"
-    val output = "./tmp/output"
+    val output = "./tmp/output/out.txt"
 
     PipeExamples.main(Array(input1, input2, output))
 
-    result = scala.io.Source.fromFile(output + "/part-00000").getLines.toList
+    result = scala.io.Source.fromFile(output + "/out.txt").getLines.toList
   }
 
   describe("Processing simple input streams") {
