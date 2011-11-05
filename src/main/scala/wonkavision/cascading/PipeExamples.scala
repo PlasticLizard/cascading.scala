@@ -9,12 +9,13 @@ import cascading.flow.local.LocalFlowConnector
 import cascading.flow.FlowConnector
 import cascading.pipe.Each
 import cascading.operation.Identity
+import org.wonkavision.cascading.operation.JsonParser
 
 
 object PipeExamples{
   def main(args: Array[String]) {
     val properties = new Properties()
-    FlowConnector.setApplicationJarClass( properties, PipeExamples.getClass )
+    //FlowConnector.setApplicationJarClass( properties, PipeExamples.getClass )
     val flowConnector = new LocalFlowConnector(properties)
 
     val fileOneFields = new Fields("file1 field1", "file1 field2", "file1 field3")
@@ -32,7 +33,7 @@ object PipeExamples{
 
     //BEGIN APPLICATION CODE
 
-    val pipe = new Each("identity", new Fields( "file1 field1"), new Identity())
+    val pipe = new Each("json", new Fields( "file1 field1"), new JsonParser(new Fields("file1 field1")))
 
     //END APPLICATION CODE
 
