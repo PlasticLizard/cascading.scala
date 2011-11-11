@@ -63,7 +63,7 @@ class ConvertSpec extends Spec with BeforeAndAfter with ShouldMatchers {
         sources(1) should equal (Some(now))
       }
     }
-    
+
   }
 
 }
