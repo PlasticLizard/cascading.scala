@@ -64,6 +64,16 @@ class ConvertSpec extends Spec with BeforeAndAfter with ShouldMatchers {
       }
     }
 
+    describe("toBool") {
+      it("Should convert values to booleans") {
+        val sources = List(true,false,"true","false")
+          .map(Convert.toBool)
+
+        val expected = List(true,false,true,false)
+        sources should equal (expected.map(Some(_)))
+      }
+    }
+
   }
 
 }

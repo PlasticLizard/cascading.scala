@@ -54,4 +54,13 @@ object Convert {
 		Option(converted)
 	}
 
+	def toBool(value: Any) : Option[Boolean] = {
+		if (value == null) return None
+		val converted : Boolean = value match {
+			case v:Boolean => v.asInstanceOf[Boolean]
+			case _ => value.toString.toBoolean
+		}
+		Option(converted)
+	}
+
 }

@@ -75,6 +75,10 @@ class MapTransformationSpec extends Spec with BeforeAndAfter with ShouldMatchers
         )
       )
     }
+
+    it("should create a child when there is no valid source") {
+      result("empty_child") should equal (Map("hi_there"->null))
+    }
   }
 
   def getTestMessage = {
@@ -98,7 +102,7 @@ class TestTransform extends MapTransformation {
 			strings ("id", "name")
 		}	
 
-    child ("current_payer", source("context")) {
+    child ("current_payer", source("context", "current_payer")) {
       strings ("name", "payer_type", "payer_id")
     }
 
@@ -108,13 +112,17 @@ class TestTransform extends MapTransformation {
       string ("key", source("priority"))
     }
 
-    child ("company") {
+    child ("company", source) {
       string ("company_id")
     }
 
-    child ("created_date") {
+    child ("created_date", source) {
       date ("date", source("created_at"))
       dateString ("day_key", target("date"))
+    }
+
+    child ("empty_child") {
+      string ("hi_there")
     }
 	}
 

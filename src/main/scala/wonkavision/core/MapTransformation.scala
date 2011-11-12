@@ -7,10 +7,14 @@ import org.scala_tools.time.Imports._
 
 trait MapTransformation {
 
-	implicit def toOption(value : Any) = Option(value)
+	implicit def toOption(value : Any) : Option[Any] = Option(value)
+
+	val ISO_DAY = "yyyy-MM-dd"
+	val ISO_MONTH = "yyyy-MM"
 
 	type Source = Map[String, Any]
 	type Target = HashMap[String, Any]
+	val EmptySource : Source = new scala.collection.immutable.HashMap
 
 	val sourceStack = new Stack[Source]
 	val targetStack = new Stack[Target]
@@ -18,32 +22,40 @@ trait MapTransformation {
 	def source = sourceStack.head
 	def target = targetStack.head
 
+	def source(sourcePath : String*) = {
+		findNestedSource(sourcePath.toList)
+	}
+
 	def map : Unit
 
-	def execute( source: Source, t: Target = new Target ): Target =
-		to(t){ from(Some(source)){ map } } 
+	def execute( source: Source, t: Target = new Target, m: => Unit = map ): Target =
+		to(t){ from(Some(source)){ m } } 
 
-	def from(src: Option[Source],
-		       fieldName : Option[String] = None)
+	def include(transform : MapTransformation, src : Source = source) {
+		transform.execute(src, target)
+	}
+
+	def from(src: Option[Source])
 		       (f: => Unit) = {
 
 		var context = src.getOrElse(source)
-		for (field <- fieldName) {
-			context = context.getOrElse(field, context).asInstanceOf[Source]
-		}
 		withContext[Source](sourceStack, context, f)
 	}
 
 	def to(target: Target)(f: => Unit) =
 		withContext[Target](targetStack, target, f)
 	
-	def child(childName: String, source: Any)(f: => Unit) : Unit = {
+	def child(childName: String, source: Any)(f: => Unit) {
 		child(childName, Some(source.asInstanceOf[Source]))(f)
 	}
 
-	def child(childName: String, source: Option[Source] = None)(f: => Unit) {
+	def child(childName: String,
+		        src: Option[Source] = None)(f: => Unit) {
+		
+		val s = src.getOrElse( source.getOrElse(childName, EmptySource) ).asInstanceOf[Source]        	
+		
 		target(childName) = to( new Target ) {
-			from(source, Some(childName)){f}
+			from(Some(s)){f}
 		}
 	}
 
@@ -51,7 +63,7 @@ trait MapTransformation {
 		      value: Option[Any] = None,
 		      default: Option[Any] = None ) = {
 		       
-		setTarget(fieldName, Convert toInt getValue(fieldName, value, default))
+		setTarget(fieldName, getInt(fieldName, value, default))
 	}
 
 	def ints(fieldNames : String*) = fieldNames.foreach(int(_))
@@ -60,7 +72,7 @@ trait MapTransformation {
 		       value: Option[Any] = None,
 		       default: Option[Any] = None ) = {
 
-		setTarget(fieldName, Convert toLong getValue(fieldName, value, default))
+		setTarget(fieldName, getLong(fieldName, value, default))
 	}
 	def longs(fieldNames: String*) = fieldNames.foreach(long(_))
 
@@ -68,7 +80,7 @@ trait MapTransformation {
 		         value: Option[Any] = None,
 		         default: Option[Any] = None) = {
 
-		setTarget(fieldName, Convert toDouble getValue(fieldName, value, default))
+		setTarget(fieldName, getDouble(fieldName, value, default))
 	}
 	def doubles(fieldNames : String*) = fieldNames.foreach(double(_))
 
@@ -76,7 +88,7 @@ trait MapTransformation {
 	           value: Option[Any] = None,
 	           default: Option[Any] = None) = {
 
-  	setTarget( fieldName, Convert toString getValue(fieldName, value, default))
+  	setTarget(fieldName, getString(fieldName, value, default) )
   }	
 	def strings(fieldNames: String*) = fieldNames.foreach(string(_))
 
@@ -84,21 +96,58 @@ trait MapTransformation {
 				   value: Option[Any] = None,
 				   default: Option[Any] = None) = {
 				   	
-		setTarget( fieldName, Convert toDate getValue(fieldName, value, default))	
+		setTarget(fieldName, getDate(fieldName, value, default))	
 	}
 	def dates(fieldNames: String*) = fieldNames.foreach(string(_))
 
 	def dateString(fieldName: String,
 		             value: Option[Any] = None,
 		             default: Option[Any] = None,
-		             format: String = "yyyy-MM-dd" ) = {
+		             format: String = ISO_DAY) = {
+		
+		setTarget(fieldName, getDateString(fieldName,value,default,format))
+	}
 
-		val date = Convert toDate getValue(fieldName, value, default)
+	def bool(fieldName: String,
+					 value: Option[Any] = None,
+					 default: Option[Any] = None) = {
+					 	
+		setTarget(fieldName, getBool(fieldName, value, default))	
+	}
+	def bools(fieldNames: String*) = fieldNames.foreach(bool(_))
+
+	def formatDate(date: DateTime, dateFormat: String) =
+		DateTimeFormat.forPattern(dateFormat).print(date)
+
+	def formatDate(date: Option[DateTime], dateFormat: String) : String =
+		if (date.isEmpty) null else formatDate(date.get, dateFormat)
+	
+	
+	def getString(fieldName: String, value: Option[Any] = None, default: Option[Any] = None) =
+		Convert toString getValue(fieldName, value, default)
+
+	def getInt(fieldName: String, value: Option[Any] = None, default: Option[Any] = None) =
+		Convert toInt getValue(fieldName, value, default)
+
+	def getLong(fieldName: String, value: Option[Any] = None, default: Option[Any] = None) =
+		Convert toLong getValue(fieldName, value, default)
+
+	def getDouble(fieldName : String, value: Option[Any] = None, default: Option[Any] = None) =
+		Convert toDouble getValue(fieldName, value, default)
+
+	def getDate(fieldName : String, value: Option[Any] = None, default: Option[Any] = None) =
+		Convert toDate getValue(fieldName, value, default)
+
+	def getBool(fieldName : String, value: Option[Any] = None, default: Option[Any] = None) = 
+		Convert toBool getValue(fieldName, value, default)
+	
+	def getDateString(fieldName : String, value: Option[Any] = None, default: Option[Any] = None, format: String = "yyyy-MM-dd") = {
+		val date = getDate(fieldName, value, default)
 		var dateString : String = null
 		for(d <- date) {
-			dateString = DateTimeFormat.forPattern(format).print(d)
+			dateString = formatDate(d, format)
 		}
-		setTarget(fieldName, Option(dateString))
+		Option(dateString)
 	}
 
 	private def getValue(fieldName: String,
@@ -125,6 +174,16 @@ trait MapTransformation {
 		                         f: => Unit):T = {
 
 		stack.push(ctx); f; stack.pop
+	}
+
+	private def findNestedSource(pathElements : List[String],
+		                           current : Source = source) : Source = {
+		if (pathElements == Nil) current
+		else {
+			val next = current.getOrElse(pathElements.head, null).asInstanceOf[Source]
+			findNestedSource(pathElements.tail, next)
+		}
+		
 	}
 	
 }
