@@ -1,4 +1,4 @@
-package rpm_analytics.transformations
+package rpm.analytics.transformations
 
 import org.wonkavision.core.MapTransformation
 
@@ -12,7 +12,7 @@ class WorkQueueEntry extends MapTransformation {
 		}		
 
 		child ("assigned_to") {
-			string ("id", default="Uknown")
+			string ("id", default="Unknown")
 			string ("name", default="Unknown")
 		}
 

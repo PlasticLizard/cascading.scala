@@ -8,6 +8,7 @@ import org.scala_tools.time.Imports._
 trait MapTransformation {
 
 	implicit def toOption(value : Any) : Option[Any] = Option(value)
+	implicit def toOption(value : Int) : Option[Int] = Option(value)
 
 	val ISO_DAY = "yyyy-MM-dd"
 	val ISO_MONTH = "yyyy-MM"
@@ -21,6 +22,12 @@ trait MapTransformation {
 
 	def source = sourceStack.head
 	def target = targetStack.head
+
+	def source(idx : Int) = sourceStack(idx)
+	def target(idx : Int) = targetStack(idx)
+
+	def parentSource = source(1)
+	def parentTarget = target(1)
 
 	def source(sourcePath : String*) = {
 		findNestedSource(sourcePath.toList)
@@ -116,6 +123,15 @@ trait MapTransformation {
 	}
 	def bools(fieldNames: String*) = fieldNames.foreach(bool(_))
 
+	def count(fieldName : String,
+						inc : Int = 1,
+						default : Option[Int] = Some(0))
+						(pred : => Boolean ) {
+							
+		val c = if (pred) inc else default.getOrElse(null)
+		int(fieldName, c)
+	}
+
 	def formatDate(date: DateTime, dateFormat: String) =
 		DateTimeFormat.forPattern(dateFormat).print(date)
 
@@ -154,11 +170,10 @@ trait MapTransformation {
 		                   proposedValue: Option[Any],
 		                   defaultValue: Option[Any] = None) : Any = {
 		
-		var default = source.getOrElse(fieldName, null)
-		default = defaultValue.getOrElse(default)
+		var value = source.getOrElse(fieldName, null)
+		if (value == null || value.toString == "") value = defaultValue.getOrElse(null)
 
-		proposedValue getOrElse default
-		
+		proposedValue getOrElse value		
 	}
 
 	private def setTarget(fieldName : String,

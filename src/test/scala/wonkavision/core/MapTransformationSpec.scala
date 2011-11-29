@@ -79,6 +79,18 @@ class MapTransformationSpec extends Spec with BeforeAndAfter with ShouldMatchers
     it("should create a child when there is no valid source") {
       result("empty_child") should equal (Map("hi_there"->null))
     }
+
+    describe ("count") {
+      it ("should apply the increment when the predicate is true") {
+        result("big_balance") should equal (1)
+      }
+      it ("should apply the default when the predicate is not true") {
+        result("little_balance") should equal (-1)
+      }
+      it ("should apply null when the predicate is not true and no default is provided") {
+        result("little_balance_2") should equal (null)
+      }
+    }
   }
 
   def getTestMessage = {
@@ -93,7 +105,7 @@ class MapTransformationSpec extends Spec with BeforeAndAfter with ShouldMatchers
 class TestTransform extends MapTransformation {
 	def	map = {
 		
-    string  ("id")
+    string  ("id", default="unknown")
     string  ("resolution", default="queued")
 		int     ("priority")
     double  ("current_balance")
@@ -124,6 +136,10 @@ class TestTransform extends MapTransformation {
     child ("empty_child") {
       string ("hi_there")
     }
+
+    count ("big_balance") { getDouble("current_balance").get > 100 }
+    count ("little_balance", default = -1) { getDouble("current_balance").get < 100 }
+    count ("little_balance_2", default = None) { getDouble("current_balance").get < 100 }
 	}
 
 
