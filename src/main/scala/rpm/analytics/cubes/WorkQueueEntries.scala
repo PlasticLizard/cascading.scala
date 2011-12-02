@@ -66,11 +66,11 @@ class WorkQueueEntries extends Cube("Work Queue Entries") {
 		measures = List("count", "incoming", "outgoing", "completed", "overdue",
 		                "expiring_today", "available", "change", "ready"),
 
-		a => a.combine( "team", "work_queue", "work_queue_priority" )
-		      .add ( "team", "status" )
-		      .add ( "team", "work_queue", "status" )
-		      .add (" team", "work_queue_priority", "work_queue", "status" )
-		      .add ( "work_queue_priority", "status" )
+		_.combine( "team", "work_queue", "work_queue_priority" )
+		 .add ( "team", "status" )
+		 .add ( "team", "work_queue", "status" )
+		 .add (" team", "work_queue_priority", "work_queue", "status" )
+		 .add ( "work_queue_priority", "status" )
 	)
 
 }

@@ -39,14 +39,14 @@ class CubeSpec extends Spec with BeforeAndAfter with ShouldMatchers {
       aggregation (
         name = "a1",
         measures = List("awe_sum"),
-        agg => agg.add("dimname")
-                   .combine("dimname2") //change to combine & test
+        _.add("dimname")
+         .combine("dimname2") //change to combine & test
       )
 
       aggregation (
         name = "a2",
         measures = List("awe_sum", "flot_sum"),
-        agg => agg.aggregateAll
+        _.aggregateAll
       )
      
     }
